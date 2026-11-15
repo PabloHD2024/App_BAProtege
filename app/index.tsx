@@ -1,31 +1,46 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
-import { router } from 'expo-router';
-import Header from '../components/Header';
-import PrimaryButton from '../components/PrimaryButton';
+// app/index.tsx
+import { useEffect, useState } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { Redirect } from 'expo-router';
+import { getOnboarded, getUser } from '../utils/storage';
 import { COLORS } from '../constants/colors';
 
-export default function Inicio() {
-  return (
-    <View style={styles.container}>
-      <Header title="BA Protege+" showLogo={false} />
-      <View style={styles.content}>
-        <Image source={require('../assets/logo.png')} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.title}>Protección Digital</Text>
-        <Text style={styles.title}>Para Tu Familia</Text>
+export default function Index() {
+  const [target, setTarget] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      // 👇 Poné esto en true para forzar el onboarding
+      const DEV_FORCE_ONBOARDING = true; 
+
+      if (DEV_FORCE_ONBOARDING) {
+        return setTarget('/onboarding');
+      }
+
+      const onboarded = await getOnboarded();
+      const user = await getUser();
+
+      if (!onboarded) {
+        setTarget('/onboarding');
+      } else if (onboarded && !user) {
+        setTarget('/bienvenida'); // 👈 Ahora va a bienvenida, no a index
+      } else if (onboarded && user) {
+        setTarget(user.mode === 'protegido' ? '/protegido/notificaciones' : '/(tabs)/inicio');
+      }
+    })();
+  }, []);
+
+  if (!target) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
-      <View style={styles.footer}>
-        <PrimaryButton title="Inicio de sesión" onPress={() => router.push('/login')} />
-        <PrimaryButton title="Registrarse" variant="outline" onPress={() => router.push('/registro')} />
-      </View>
-    </View>
-  );
+    );
+  }
+
+  return <Redirect href={target as any} />;
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.white },
-  content: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  logo: { width: 120, height: 120, marginBottom: 16 },
-  title: { fontSize: 18, color: COLORS.primary, fontWeight: '600' },
-  footer: { padding: 24 },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.white },
 });

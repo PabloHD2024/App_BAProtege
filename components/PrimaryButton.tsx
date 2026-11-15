@@ -24,7 +24,7 @@ export default function PrimaryButton({ title, onPress, variant = 'solid', style
 }
 
 const styles = StyleSheet.create({
-  button: { backgroundColor: COLORS.primary, paddingVertical: 13, borderRadius: 8, alignItems: 'center', marginVertical: 6 },
+  button: { backgroundColor: COLORS.primary, padding: 20, borderRadius: 8, alignItems: 'center', marginVertical: 6 },
   outline: { backgroundColor: COLORS.white, borderWidth: 1.5, borderColor: COLORS.primary },
   disabled: { backgroundColor: '#D3D3D3' },
   text: { color: COLORS.white, fontWeight: '600', fontSize: 15 },

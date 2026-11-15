@@ -39,6 +39,7 @@ export const ICONS = {
   square: { set: 'ion', name: 'square-outline' },
   checkbox: { set: 'ion', name: 'checkbox' },
   child: { set: 'mc', name: 'account-child' },
+  logoGooglePlaystore: { set: 'mc', name: 'google-play' as MCIconsName }, //Logo tienda PlayStore Google
 } as const satisfies Record<string, IconConfig>;
 
 export type IconKey = keyof typeof ICONS;

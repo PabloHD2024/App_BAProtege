@@ -40,72 +40,83 @@ export default function Login() {
     }
   };
 
-  const handleForgotPassword = () => {
-    Alert.alert('Recuperar contraseña', 'Te vamos a enviar un correo con instrucciones.', [{ text: 'Entendido' }]);
-  };
-
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: COLORS.white }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Header title="BA Protege+" subtitle="Iniciar sesión" />
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.iconWrap}>
-          <AppIcon name="login" size={48} color={COLORS.primary} />
-        </View>
-        <Text style={styles.title}>¡Bienvenido de nuevo!</Text>
-        <Text style={styles.subtitle}>Ingresá tus credenciales para continuar.</Text>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <View style={styles.container}>
+        <Header title="BA Protege+" subtitle="Iniciar sesión" />
 
-        <Text style={styles.label}>Correo electrónico</Text>
-        <View style={[styles.inputWrap, error && !isValidEmail && styles.inputError]}>
-          <AppIcon name="mail" size={18} color={COLORS.grayText} />
-          <TextInput style={styles.input} placeholder="tucorreo@ejemplo.com" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} value={email} onChangeText={(t) => { setEmail(t); setError(null); }} />
-        </View>
+        {/* Contenido scrolleable */}
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <View style={styles.iconWrap}>
+            <AppIcon name="login" size={48} color={COLORS.primary} />
+          </View>
+          <Text style={styles.title}>¡Bienvenido de nuevo!</Text>
+          <Text style={styles.subtitle}>Ingresá tus credenciales para continuar.</Text>
 
-        <Text style={styles.label}>Contraseña</Text>
-        <View style={styles.inputWrap}>
-          <AppIcon name="lock" size={18} color={COLORS.grayText} />
-          <TextInput style={styles.input} placeholder="Mínimo 6 caracteres" secureTextEntry={!showPassword} value={password} onChangeText={(t) => { setPassword(t); setError(null); }} />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)} hitSlop={10}>
-            <AppIcon name="eye" size={18} color={showPassword ? COLORS.primary : COLORS.grayText} />
+          <Text style={styles.label}>Correo electrónico</Text>
+          <View style={[styles.inputWrap, error && !isValidEmail && styles.inputError]}>
+            <AppIcon name="mail" size={18} color={COLORS.grayText} />
+            <TextInput 
+              style={styles.input} 
+              placeholder="tucorreo@ejemplo.com" 
+              keyboardType="email-address" 
+              autoCapitalize="none" 
+              autoCorrect={false} 
+              value={email} 
+              onChangeText={(t) => { setEmail(t); setError(null); }} 
+            />
+          </View>
+
+          <Text style={styles.label}>Contraseña</Text>
+          <View style={styles.inputWrap}>
+            <AppIcon name="lock" size={18} color={COLORS.grayText} />
+            <TextInput 
+              style={styles.input} 
+              placeholder="Mínimo 6 caracteres" 
+              secureTextEntry={!showPassword} 
+              value={password} 
+              onChangeText={(t) => { setPassword(t); setError(null); }} 
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} hitSlop={10}>
+              <AppIcon name="eye" size={18} color={showPassword ? COLORS.primary : COLORS.grayText} />
+            </TouchableOpacity>
+          </View>
+
+          {error && (
+            <View style={styles.errorBox}>
+              <AppIcon name="warning" size={16} color={COLORS.orange} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
+          <TouchableOpacity style={styles.forgot} onPress={() => Alert.alert('Recuperar', 'Te enviamos un correo.')}>
+            <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
+          </TouchableOpacity>
+        </ScrollView>
+
+        {/* Botones anclados al fondo */}
+        <View style={styles.footer}>
+          {loading ? (
+            <View style={styles.loadingBtn}>
+              <ActivityIndicator color={COLORS.white} />
+              <Text style={styles.loadingText}>Ingresando…</Text>
+            </View>
+          ) : (
+            <PrimaryButton title="Iniciar sesión" variant={canSubmit ? 'solid' : 'disabled'} onPress={() => canSubmit && handleLogin()} />
+          )}
+          <TouchableOpacity style={styles.registerRow} onPress={() => router.push('/registro')}>
+            <Text style={styles.registerText}>¿No tenés cuenta? </Text>
+            <Text style={styles.registerLink}>Registrate</Text>
           </TouchableOpacity>
         </View>
-
-        {error && (
-          <View style={styles.errorBox}>
-            <AppIcon name="warning" size={16} color={COLORS.orange} />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        )}
-
-        <TouchableOpacity style={styles.forgot} onPress={handleForgotPassword}>
-          <Text style={styles.forgotText}>¿Olvidaste tu contraseña?</Text>
-        </TouchableOpacity>
-
-        {loading ? (
-          <View style={styles.loadingBtn}>
-            <ActivityIndicator color={COLORS.white} />
-            <Text style={styles.loadingText}>Ingresando…</Text>
-          </View>
-        ) : (
-          <PrimaryButton title="Iniciar sesión" variant={canSubmit ? 'solid' : 'disabled'} onPress={() => canSubmit && handleLogin()} />
-        )}
-
-        <View style={styles.separator}>
-          <View style={styles.line} />
-          <Text style={styles.or}>o</Text>
-          <View style={styles.line} />
-        </View>
-
-        <TouchableOpacity style={styles.registerRow} onPress={() => router.push('/registro')}>
-          <Text style={styles.registerText}>¿No tenés cuenta? </Text>
-          <Text style={styles.registerLink}>Registrate</Text>
-        </TouchableOpacity>
-      </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { padding: 20, paddingBottom: 40 },
+  container: { flex: 1, backgroundColor: COLORS.white },
+  scrollContent: { padding: 20, paddingBottom: 0 },
   iconWrap: { alignSelf: 'center', width: 90, height: 90, borderRadius: 45, backgroundColor: COLORS.lightPurple, alignItems: 'center', justifyContent: 'center', marginVertical: 20 },
   title: { fontSize: 20, fontWeight: '700', color: COLORS.primary, textAlign: 'center' },
   subtitle: { fontSize: 13, color: COLORS.grayText, textAlign: 'center', marginTop: 6, marginBottom: 20 },
@@ -117,12 +128,10 @@ const styles = StyleSheet.create({
   errorText: { color: COLORS.orange, fontSize: 12, marginLeft: 6, flex: 1 },
   forgot: { alignSelf: 'flex-end', marginTop: 10, marginBottom: 20 },
   forgotText: { fontSize: 12, color: COLORS.primary, textDecorationLine: 'underline' },
+  footer: { padding: 20, paddingBottom: 32, borderTopWidth: 1, borderTopColor: '#F0F0F0', backgroundColor: COLORS.white },
   loadingBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primary, paddingVertical: 14, borderRadius: 8, marginVertical: 6 },
   loadingText: { color: COLORS.white, fontWeight: '600', marginLeft: 10, fontSize: 15 },
-  separator: { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
-  line: { flex: 1, height: 1, backgroundColor: COLORS.gray },
-  or: { marginHorizontal: 12, color: COLORS.grayText, fontSize: 12 },
-  registerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
+  registerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 12 },
   registerText: { fontSize: 13, color: COLORS.grayText },
   registerLink: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
 });
