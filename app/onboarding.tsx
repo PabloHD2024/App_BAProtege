@@ -1,11 +1,11 @@
 import React, { useRef, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, Dimensions,
-  TouchableOpacity, ListRenderItemInfo,
+  TouchableOpacity, ListRenderItemInfo, Image,
 } from 'react-native';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppIcon from '../components/AppIcon';
-import { IconKey } from '../constants/icons';
 import { COLORS } from '../constants/colors';
 import { setOnboarded } from '../utils/storage';
 
@@ -15,10 +15,8 @@ type Slide = {
   id: string;
   title: string;
   subtitle: string;
-  icon: IconKey;
-  iconColor: string;
+  image: any;
   bullets?: string[];
-  showLogo?: boolean;
   showPlayStore?: boolean;
   showPin?: boolean;
 };
@@ -28,54 +26,48 @@ const SLIDES: Slide[] = [
     id: '1',
     title: 'Navegación más segura\npara tus hijos',
     subtitle: 'Control parental para prevenir el acceso a sitios de apuestas ilegales y otros contenidos riesgosos.',
-    icon: 'shieldCheckFilled',
-    iconColor: COLORS.primary,
-    showLogo: true,
+    image: require('../assets/onboarding/BAProtege-logo.png'),
   },
   {
     id: '2',
     title: '1. Registrate',
     subtitle: 'Creá tu cuenta para empezar a proteger a tus hijos.',
-    icon: 'profile',
-    iconColor: COLORS.primary,
+    image: require('../assets/onboarding/registrate.png'),
     bullets: ['Es rápido y seguro', 'Podés ser el responsable', 'Gestioná todos tus dispositivos'],
   },
   {
     id: '3',
     title: '2. Configurá el modo responsable',
     subtitle: 'Elegí el modo responsable para gestionar la protección de tus hijos.',
-    icon: 'settings',
-    iconColor: COLORS.green,
+    image: require('../assets/onboarding/modoresponsable.png'),
     bullets: ['Activá el VPN y configurá tu celular', 'Bloqueá sitios de apuestas ilegales', 'Recibí alertas de actividad'],
   },
   {
     id: '4',
     title: '3. Instalá la aplicación en el dispositivo del menor',
     subtitle: 'Descargá BA Protege+ en el dispositivo que usarán tus hijos.',
-    icon: 'phone',
-    iconColor: COLORS.primary,
+    image: require('../assets/onboarding/Instalaraplicacion.png'),
     showPlayStore: true,
   },
   {
     id: '5',
     title: '4. Vinculá el dispositivo con la clave de acceso',
     subtitle: 'Ingresá la clave para vincular el dispositivo del menor.',
-    icon: 'lock',
-    iconColor: COLORS.green,
-    showPin: true,
+    image: require('../assets/onboarding/VincularDispositivo.png'),
   },
   {
     id: '6',
     title: '¡Todo listo!',
     subtitle: 'Tu familia está protegida con BA Protege+.',
-    icon: 'shieldCheckFilled',
-    iconColor: COLORS.primary,
+    image: require('../assets/onboarding/listo.png'),
   },
 ];
 
 export default function Onboarding() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList<Slide>>(null);
+
+  const insets = useSafeAreaInsets();
 
   const finishOnboarding = useCallback(async () => {
     await setOnboarded(true);
@@ -97,9 +89,7 @@ export default function Onboarding() {
   }, [finishOnboarding]);
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
-    if (viewableItems.length > 0) {
-      setCurrentIndex(viewableItems[0].index);
-    }
+    if (viewableItems.length > 0) setCurrentIndex(viewableItems[0].index);
   }).current;
 
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
@@ -112,16 +102,9 @@ export default function Onboarding() {
 
   const renderItem = ({ item }: ListRenderItemInfo<Slide>) => (
     <View style={[styles.slide, { width }]}>
-      {item.showLogo ? (
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>BA Protege+</Text>
-          <AppIcon name="shieldCheckFilled" size={80} color={COLORS.primary} />
-        </View>
-      ) : (
-        <View style={styles.iconContainer}>
-          <AppIcon name={item.icon} size={80} color={item.iconColor} />
-        </View>
-      )}
+      <View style={styles.imageContainer}>
+        <Image source={item.image} style={styles.image} resizeMode="contain" />
+      </View>
 
       <Text style={styles.title}>{item.title}</Text>
       <Text style={styles.subtitle}>{item.subtitle}</Text>
@@ -139,7 +122,7 @@ export default function Onboarding() {
 
       {item.showPlayStore && (
         <View style={styles.playStoreContainer}>
-          <AppIcon name="phone" size={32} color={COLORS.black} /> 
+          <AppIcon name="phone" size={32} color={COLORS.black} />
           <Text style={styles.playStoreText}>Disponible en Google Play</Text>
         </View>
       )}
@@ -156,9 +139,8 @@ export default function Onboarding() {
     </View>
   );
 
-    return (
+  return (
     <View style={styles.container}>
-      {/* FlatList ocupa todo el espacio disponible */}
       <View style={{ flex: 1 }}>
         <FlatList
           ref={flatListRef}
@@ -175,7 +157,6 @@ export default function Onboarding() {
         />
       </View>
 
-      {/* Indicadores y botones siempre abajo */}
       <View style={styles.pagination}>
         {SLIDES.map((_, i) => (
           <View
@@ -189,7 +170,7 @@ export default function Onboarding() {
         ))}
       </View>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: 20 + insets.bottom }]}>
         <TouchableOpacity style={styles.button} onPress={handleNext}>
           <Text style={styles.buttonText}>
             {currentIndex === SLIDES.length - 1 ? 'Comenzar' : 'Siguiente'}
@@ -206,11 +187,19 @@ export default function Onboarding() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.white }, // paddingTop para que no choque con la barra de estado
+  container: { flex: 1, backgroundColor: COLORS.white },
   slide: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30 },
-  logoContainer: { alignItems: 'center', marginBottom: 30 },
-  logoText: { fontSize: 24, fontWeight: '700', color: COLORS.primary, marginBottom: 20 },
-  iconContainer: { marginBottom: 30 },
+  imageContainer: {
+    width: 240,
+    height: 240,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 30,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
   title: { fontSize: 20, fontWeight: '700', color: COLORS.primary, textAlign: 'center', marginBottom: 12 },
   subtitle: { fontSize: 14, color: COLORS.grayText, textAlign: 'center', marginBottom: 20 },
   bulletsContainer: { alignSelf: 'stretch', marginBottom: 20 },
@@ -224,7 +213,7 @@ const styles = StyleSheet.create({
   pagination: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
   dot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 4 },
   dotActive: { width: 24 },
-  footer: { paddingHorizontal: 30, paddingBottom: 30 },
+  footer: { paddingHorizontal: 30, paddingTop: 10 },
   button: { backgroundColor: COLORS.primary, paddingVertical: 14, borderRadius: 8, alignItems: 'center', marginBottom: 10 },
   buttonText: { color: COLORS.white, fontSize: 16, fontWeight: '600' },
   skipButton: { alignItems: 'center', paddingVertical: 10 },
